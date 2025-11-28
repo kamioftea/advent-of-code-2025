@@ -1,7 +1,7 @@
 @use 'sass:math';
 
 @import 'settings';
-@import 'foundation-sites/scss/foundation';
+@import '../../node_modules/foundation-sites/scss/foundation';
 
 // Global styles
 @include foundation-global-styles;

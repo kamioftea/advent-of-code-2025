@@ -7,8 +7,8 @@
   "scripts": {
     "start": "concurrently \"npm:watch:*\"",
     "watch:11ty": "eleventy --serve --port=8081",
-    "watch:scss": "sass -Inode_modules/foundation-sites/scss _includes/stylesheets:_site/assets/styles --watch",
-    "build": "rm -rf _site && mkdir _site && cp -r ../target/doc/* ./_site && sass -Inode_modules/foundation-sites/scss _includes/stylesheets:_site/assets/styles && eleventy"
+    "watch:scss": "sass _includes/stylesheets:_site/assets/styles --watch",
+    "build": "rimraf _site && mkdirp _site && cpy ../target/doc/**/* ./_site && sass -Inode_modules/foundation-sites/scss --quiet-deps _includes/stylesheets:_site/assets/styles && eleventy"
   },
   "repository": {
     "type": "git",
@@ -29,6 +29,9 @@
     "sass": "^1.94.2"
   },
   "devDependencies": {
-    "@11ty/eleventy-plugin-inclusive-language": "^1.0.3"
+    "@11ty/eleventy-plugin-inclusive-language": "^1.0.3",
+    "rimraf": "^6.1.2",
+    "mkdirp": "^3.0.1",
+    "cpy-cli": "^6.0.0"
   }
 }
