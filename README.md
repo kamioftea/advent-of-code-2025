@@ -51,8 +51,6 @@ This:
 - 2018 `10/50` Rust [GitHub](https://github.com/kamioftea/advent-of-code-2018),
   [Puzzles](https://adventofcode.com/2018)
 - 2017 `50/50` Scala [GitHub](https://github.com/kamioftea/advent-of-code-2017),
-  [Write Ups](https://blog.goblinoid.co.uk/tag/advent-of-code-2017/),
   [Puzzles](https://adventofcode.com/2017)
 - 2016 `10/50` Scala [GitHub](https://github.com/kamioftea/advent-of-code-2016),
-  [Write Ups](https://kamioftea.github.io/advent-of-code-2016/),
   [Puzzles](https://adventofcode.com/2016)
