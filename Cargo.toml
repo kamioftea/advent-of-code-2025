@@ -1,0 +1,16 @@
+[package]
+name = "advent-of-code-2025"
+version = "0.1.0"
+edition = "2024"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+itertools = { version = "0.14.0", features = [] }
+text_io = "0.1.13"
+error-chain = { version = "0.12.4", features = [] }
+reqwest = { version = "0.12.24", features = ["blocking", "cookies"] }
+regex = "1.12.2"
+scraper = "0.24.0"
+rayon = "1.11.0"
+cached = "0.56.0"

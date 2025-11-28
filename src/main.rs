@@ -1,0 +1,37 @@
+extern crate cached;
+extern crate core;
+extern crate itertools;
+#[macro_use]
+extern crate text_io;
+mod bootstrap_day;
+mod helpers;
+
+use bootstrap_day::bootstrap_day;
+use std::io::{self, Write};
+use std::time::Instant;
+
+fn main() {
+    print!("Which day? (0 to run all): ");
+    io::stdout().flush().unwrap();
+
+    let day: u8 = read!();
+    let days: Vec<Box<dyn Fn() -> ()>> = vec![
+        
+    ];
+
+    let start = Instant::now();
+    match day.checked_sub(1).and_then(|idx| days.get(idx as usize)) {
+        Some(solution) => solution(),
+        None if day == 0 => days.iter().enumerate().for_each(|(i, solution)| {
+            let start = Instant::now();
+            println!("==== Day {} ====", i + 1);
+            solution();
+            println!("-- took {:.2?}", start.elapsed());
+        }),
+        None if day >= 1 && day <= 25 => bootstrap_day(day).expect("Failed to bootstrap day"),
+        None => println!("Invalid Day {}", day),
+    }
+
+    println!();
+    println!("Finished in {:.2?}", start.elapsed());
+}
