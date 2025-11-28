@@ -1,4 +1,3 @@
-use error_chain::error_chain;
 use itertools::Itertools;
 use regex::Regex;
 use reqwest::cookie::Jar;
@@ -8,15 +7,34 @@ use std::fs;
 use std::fs::File;
 use std::io::copy;
 use std::sync::Arc;
+use text_io::Error;
 
-error_chain! {
-     foreign_links {
-         Io(std::io::Error);
-         HttpRequest(reqwest::Error);
-     }
+#[derive(Debug)]
+pub enum BootstrapError {
+    IoError(std::io::Error),
+    ReqwestError(reqwest::Error),
+    HtmlParseError(String),
 }
 
-pub fn bootstrap_day(day: u8) -> Result<()> {
+impl From<reqwest::Error> for BootstrapError {
+    fn from(err: reqwest::Error) -> Self {
+        BootstrapError::ReqwestError(err)
+    }
+}
+
+impl From<std::io::Error> for BootstrapError {
+    fn from(err: std::io::Error) -> Self {
+        BootstrapError::IoError(err)
+    }
+}
+
+impl From<String> for BootstrapError {
+    fn from(err: String) -> Self {
+        BootstrapError::HtmlParseError(err)
+    }
+}
+
+pub fn bootstrap_day(day: u8) -> Result<(), BootstrapError> {
     let session_cookie =
         fs::read_to_string("res/session_cookie.txt").expect("Failed to read session cookie");
 
