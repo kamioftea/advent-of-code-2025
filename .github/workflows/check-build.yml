@@ -45,8 +45,8 @@ jobs:
           cargo doc --all --no-deps --document-private-items --all-features
 
       - name: Test Blog
+        working-directory: ./pubs
         run: |
-          cd pubs
           npm ci --ignore-scripts
           npm run build
       
