@@ -7,32 +7,10 @@ use std::fs;
 use std::fs::File;
 use std::io::copy;
 use std::sync::Arc;
-use text_io::Error;
 
-#[derive(Debug)]
-pub enum BootstrapError {
-    IoError(std::io::Error),
-    ReqwestError(reqwest::Error),
-    HtmlParseError(String),
-}
+use bootstrap_error::BootstrapError;
 
-impl From<reqwest::Error> for BootstrapError {
-    fn from(err: reqwest::Error) -> Self {
-        BootstrapError::ReqwestError(err)
-    }
-}
-
-impl From<std::io::Error> for BootstrapError {
-    fn from(err: std::io::Error) -> Self {
-        BootstrapError::IoError(err)
-    }
-}
-
-impl From<String> for BootstrapError {
-    fn from(err: String) -> Self {
-        BootstrapError::HtmlParseError(err)
-    }
-}
+mod bootstrap_error;
 
 pub fn bootstrap_day(day: u8) -> Result<(), BootstrapError> {
     let session_cookie =
@@ -124,8 +102,6 @@ header: 'Day {day}: {title}'
     copy(&mut markdown_contents.as_bytes(), &mut markdown_file)?;
 
     println!("Blog file written {}", markdown_filename);
-
-    // TODO - modify main.rs
 
     Ok(())
 }
