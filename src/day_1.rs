@@ -22,8 +22,13 @@ pub fn run() {
 
     println!(
         "The dial stops on zero {} times",
-        count_zero_positions(instructions)
-    )
+        count_zero_positions(&instructions)
+    );
+
+    println!(
+        "The dial passes zero {} times",
+        count_zero_passes(&instructions)
+    );
 }
 
 fn parse_input(input: String) -> Vec<Instruction> {
@@ -37,21 +42,47 @@ fn parse_input(input: String) -> Vec<Instruction> {
         .collect()
 }
 
-fn rotate_dial(position: u32, instruction: Instruction) -> u32 {
-    match instruction {
-        (Direction::Right, dist) => (position + dist) % 100,
-        (Direction::Left, dist) => (position + 100 - (dist % 100)) % 100,
-    }
+fn rotate_dial(position: u32, (direction, distance): &Instruction) -> (u32, u32) {
+    let full_rotations = distance / 100;
+    let remaining_distance = distance % 100;
+    let delta = match direction {
+        Direction::Right => remaining_distance,
+        Direction::Left => 100 - remaining_distance,
+    };
+
+    let new_position = position + delta;
+    let passes_zero_again = position > 0
+        && match direction {
+            Direction::Right => new_position >= 100,
+            Direction::Left => new_position <= 100,
+        };
+
+    (
+        full_rotations + if passes_zero_again { 1 } else { 0 },
+        new_position % 100,
+    )
 }
 
-fn count_zero_positions(instructions: Vec<Instruction>) -> usize {
+fn count_zero_positions(instructions: &Vec<Instruction>) -> u32 {
     let mut position = 50;
     let mut count = 0;
     for instruction in instructions {
-        position = rotate_dial(position, instruction);
+        (_, position) = rotate_dial(position, instruction);
         if position == 0 {
             count += 1
         }
+    }
+
+    count
+}
+
+fn count_zero_passes(instructions: &Vec<Instruction>) -> u32 {
+    let mut position = 50;
+    let mut count = 0;
+    for instruction in instructions {
+        let (passes, new_pos) = rotate_dial(position, instruction);
+        count += passes;
+        position = new_pos;
     }
 
     count
@@ -98,15 +129,26 @@ L82"
 
     #[test]
     fn can_turn_dial() {
-        assert_eq!(rotate_dial(11, (Right, 8)), 19);
-        assert_eq!(rotate_dial(19, (Left, 19)), 0);
+        assert_eq!(rotate_dial(11, &(Right, 8)).1, 19);
+        assert_eq!(rotate_dial(19, &(Left, 19)).1, 0);
 
-        assert_eq!(rotate_dial(5, (Left, 10)), 95);
-        assert_eq!(rotate_dial(95, (Right, 5)), 0);
+        assert_eq!(rotate_dial(5, &(Left, 10)).1, 95);
+        assert_eq!(rotate_dial(95, &(Right, 5)).1, 0);
+
+        assert_eq!(rotate_dial(50, &(Right, 949)), (9, 99));
+        assert_eq!(rotate_dial(50, &(Right, 950)), (10, 0));
+
+        assert_eq!(rotate_dial(50, &(Left, 949)), (9, 1));
+        assert_eq!(rotate_dial(50, &(Left, 950)), (10, 0));
     }
 
     #[test]
     fn can_count_zero_positions() {
-        assert_eq!(count_zero_positions(sample_instructions()), 3)
+        assert_eq!(count_zero_positions(&sample_instructions()), 3)
+    }
+
+    #[test]
+    fn can_count_zero_passes() {
+        assert_eq!(count_zero_passes(&sample_instructions()), 6)
     }
 }
