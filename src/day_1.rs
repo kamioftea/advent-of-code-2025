@@ -1,13 +1,19 @@
 //! This is my solution for [Advent of Code - Day 1: _Secret Entrance_](https://adventofcode.com/2025/day/1)
 //!
-//!
+//! * [parse_input] turns the input file into a list of [Instruction]s
+//! * [rotate_dial] handles turning the dial for a single [Instruction], updating the position and
+//!   counting the number of times 0 is passed
+//! * [count_zero_positions] solves part one, tracking only the positions returned by [parse_input]
+//! * [count_zero_passes] solves part two, tracking both the count and the position
 
 use std::fs;
 
 #[derive(Debug, Eq, PartialEq)]
 enum Direction {
-    Left,
+    /// Turn dial clockwise
     Right,
+    /// Turn dial anticlockwise
+    Left,
 }
 
 type Instruction = (Direction, u32);
@@ -31,6 +37,8 @@ pub fn run() {
     );
 }
 
+/// Lines start `L` or `R` indicating the direction, then have a number indicating how far to turn
+/// the dial in that direction
 fn parse_input(input: String) -> Vec<Instruction> {
     input
         .lines()
@@ -42,15 +50,20 @@ fn parse_input(input: String) -> Vec<Instruction> {
         .collect()
 }
 
+/// Given a starting position return
+/// - How many times the dial reached zero during the turn (excluding if it started on zero, which is already counted
+///   at the end of the previous instruction.
+/// - The new position
 fn rotate_dial(position: u32, (direction, distance): &Instruction) -> (u32, u32) {
     let full_rotations = distance / 100;
     let remaining_distance = distance % 100;
+
     let delta = match direction {
         Direction::Right => remaining_distance,
         Direction::Left => 100 - remaining_distance,
     };
-
     let new_position = position + delta;
+
     let passes_zero_again = position > 0
         && match direction {
             Direction::Right => new_position >= 100,
@@ -63,6 +76,7 @@ fn rotate_dial(position: u32, (direction, distance): &Instruction) -> (u32, u32)
     )
 }
 
+/// Solves part 1, find the position after each instruction, counting each time it is zero
 fn count_zero_positions(instructions: &Vec<Instruction>) -> u32 {
     let mut position = 50;
     let mut count = 0;
@@ -76,12 +90,13 @@ fn count_zero_positions(instructions: &Vec<Instruction>) -> u32 {
     count
 }
 
+/// Solves part 2, find the number of times the dial reaches zero whilst carrying out the instructions
 fn count_zero_passes(instructions: &Vec<Instruction>) -> u32 {
     let mut position = 50;
     let mut count = 0;
     for instruction in instructions {
-        let (passes, new_pos) = rotate_dial(position, instruction);
-        count += passes;
+        let (zero_count, new_pos) = rotate_dial(position, instruction);
+        count += zero_count;
         position = new_pos;
     }
 
@@ -140,6 +155,9 @@ L82"
 
         assert_eq!(rotate_dial(50, &(Left, 949)), (9, 1));
         assert_eq!(rotate_dial(50, &(Left, 950)), (10, 0));
+
+        assert_eq!(rotate_dial(0, &(Right, 10)), (0, 10));
+        assert_eq!(rotate_dial(0, &(Left, 10)), (0, 90));
     }
 
     #[test]
