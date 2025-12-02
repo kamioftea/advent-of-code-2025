@@ -50,19 +50,36 @@ fn parse_input(input: &String) -> Vec<IdRange> {
 /// - `123123` is invalid when repeats is `2` because it is `123` twice in a row,
 /// - `121212` is invalid when repeats is `3`
 ///   and so on.
+///
+/// Starting from the first part of the number only works if the range has numbers with a uniform magnitude. This
+/// splits ranges up to enforce this,
 fn find_invalid_ids_for_repeats(&(min, max): &IdRange, repeats: u32) -> Vec<u64> {
-    let starting_exponent = (min.ilog10()) / repeats;
+    fn find_invalid_ids_for_subrange(&(min, max): &IdRange, repeats: u32) -> Vec<u64> {
+        let starting_exponent = (min.ilog10()) / repeats;
+        let first_part_of_number = min / 10u64.pow(min.ilog10() - starting_exponent);
 
-    (10u64.pow(starting_exponent)..)
-        .map(|base| {
-            format!("{base}")
-                .repeat(repeats as usize)
-                .parse::<u64>()
-                .ok()
+        (first_part_of_number..)
+            .map(|base| {
+                format!("{base}")
+                    .repeat(repeats as usize)
+                    .parse::<u64>()
+                    .ok()
+            })
+            .while_some()
+            .skip_while(|&invalid_id| invalid_id < min)
+            .take_while(|&invalid_id| invalid_id <= max)
+            .collect()
+    }
+
+    (min.ilog10()..=max.ilog10())
+        .filter(|exponent| (exponent + 1) % repeats == 0)
+        .flat_map(|exponent| {
+            let subrange = (
+                min.max(10u64.pow(exponent)),
+                max.min(10u64.pow(exponent + 1) - 1),
+            );
+            find_invalid_ids_for_subrange(&subrange, repeats)
         })
-        .while_some()
-        .skip_while(|&invalid_id| invalid_id < min)
-        .take_while(|&invalid_id| invalid_id <= max)
         .collect()
 }
 
