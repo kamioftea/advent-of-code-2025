@@ -33,8 +33,8 @@ jobs:
       - name: Build Blog
         env:
           PATH_PREFIX: /advent-of-code-2025
-        working-directory: ./pubs
         run: |
+          cd pubs
           npm ci --ignore-scripts
           npm run build
 
