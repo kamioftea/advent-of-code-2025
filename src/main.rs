@@ -7,6 +7,7 @@ mod bootstrap_day;
 mod helpers;
 
 mod day_1;
+mod day_2;
 
 use bootstrap_day::bootstrap_day;
 use std::io::{self, Write};
@@ -17,9 +18,7 @@ fn main() {
     io::stdout().flush().unwrap();
 
     let day: u8 = read!();
-    let days: Vec<Box<dyn Fn() -> ()>> = vec![
-        Box::new(|| day_1::run()),
-    ];
+    let days: Vec<Box<dyn Fn() -> ()>> = vec![Box::new(|| day_1::run()), Box::new(|| day_2::run())];
 
     let start = Instant::now();
     match day.checked_sub(1).and_then(|idx| days.get(idx as usize)) {
