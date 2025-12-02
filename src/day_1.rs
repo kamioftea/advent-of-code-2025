@@ -1,10 +1,10 @@
 //! This is my solution for [Advent of Code - Day 1: _Secret Entrance_](https://adventofcode.com/2025/day/1)
 //!
-//! * [parse_input] turns the input file into a list of [Instruction]s
-//! * [turn_dial] handles turning the dial for a single [Instruction], updating the position and
+//! * [`parse_input`] turns the input file into a list of [`Instruction`]s
+//! * [`turn_dial`] handles turning the dial for a single [`Instruction`], updating the position and
 //!   counting the number of times 0 is passed
-//! * [count_zero_positions] solves part one, tracking only the positions returned by [parse_input]
-//! * [count_zero_passes] solves part two, tracking both the count and the position
+//! * [`count_zero_positions`] solves part one, tracking only the positions returned by [`parse_input`]
+//! * [`count_zero_passes`] solves part two, tracking both the count and the position
 
 use std::fs;
 
@@ -112,7 +112,7 @@ fn count_zero_passes(instructions: &Vec<Instruction>) -> u32 {
 mod tests {
     use crate::day_1::Direction::{Left, Right};
     use crate::day_1::*;
-    
+
     fn sample_input() -> String {
         "L68
 L30
