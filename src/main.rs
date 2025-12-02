@@ -6,6 +6,8 @@ extern crate text_io;
 mod bootstrap_day;
 mod helpers;
 
+mod day_1;
+
 use bootstrap_day::bootstrap_day;
 use std::io::{self, Write};
 use std::time::Instant;
@@ -16,7 +18,7 @@ fn main() {
 
     let day: u8 = read!();
     let days: Vec<Box<dyn Fn() -> ()>> = vec![
-        
+        Box::new(|| day_1::run()),
     ];
 
     let start = Instant::now();
