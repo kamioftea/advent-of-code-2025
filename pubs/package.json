@@ -8,7 +8,7 @@
     "start": "concurrently \"npm:watch:*\"",
     "watch:11ty": "eleventy --serve --port=8081",
     "watch:scss": "sass _includes/stylesheets:_site/assets/styles --watch",
-    "build": "rimraf _site && mkdirp _site && cpy ../target/doc/**/* ./_site && sass -Inode_modules/foundation-sites/scss --quiet-deps _includes/stylesheets:_site/assets/styles && eleventy"
+    "build": "rimraf _site && mkdirp _site && cpy \"../target/doc/**/*\" \"./_site\" && sass -Inode_modules/foundation-sites/scss --quiet-deps _includes/stylesheets:_site/assets/styles && eleventy"
   },
   "repository": {
     "type": "git",
