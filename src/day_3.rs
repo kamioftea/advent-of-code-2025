@@ -2,7 +2,6 @@
 //!
 //!
 
-use itertools::Itertools;
 use std::fs;
 
 /// The entry point for running the solutions with the 'real' puzzle input.
@@ -15,8 +14,13 @@ pub fn run() {
     let battery_banks = parse_input(&contents);
 
     println!(
-        "The total output joltage is {}",
-        sum_highest_joltage(&battery_banks)
+        "The total output joltage for 2 batteries is {}",
+        sum_highest_joltage(&battery_banks, 2)
+    );
+
+    println!(
+        "The total output joltage for 12 batteries is {}",
+        sum_highest_joltage(&battery_banks, 12)
     );
 }
 
@@ -33,24 +37,29 @@ fn parse_input(input: &String) -> Vec<BatteryBank> {
         .collect()
 }
 
-fn find_highest_joltage(bank: &BatteryBank) -> u32 {
-    let mut first_max = &0;
-    let mut second_max = &0;
+fn find_highest_joltage(bank: &BatteryBank, digits: usize) -> u64 {
+    let mut max_digits = vec![0; digits];
 
-    for (battery_a, battery_b) in bank.into_iter().tuple_windows() {
-        if battery_a > first_max {
-            first_max = battery_a;
-            second_max = battery_b;
-        } else if battery_b > second_max {
-            second_max = battery_b
+    for start in 0..=(bank.len() - digits) {
+        let mut set_digit = false;
+        for current in 0..digits {
+            if max_digits[current] < bank[start + current] || set_digit {
+                set_digit = true;
+                max_digits[current] = bank[start + current];
+            }
         }
     }
 
-    first_max * 10 + second_max
+    max_digits
+        .iter()
+        .fold(0, |acc, &digit| acc * 10 + digit as u64)
 }
 
-fn sum_highest_joltage(banks: &Vec<BatteryBank>) -> u32 {
-    banks.iter().map(find_highest_joltage).sum()
+fn sum_highest_joltage(banks: &Vec<BatteryBank>, digits: usize) -> u64 {
+    banks
+        .iter()
+        .map(|bank| find_highest_joltage(bank, digits))
+        .sum()
 }
 
 #[cfg(test)]
@@ -80,25 +89,43 @@ mod tests {
     #[test]
     fn can_find_highest_joltage_in_battery_bank() {
         assert_eq!(
-            find_highest_joltage(&vec![9, 8, 7, 6, 5, 4, 3, 2, 1, 1, 1, 1, 1, 1, 1]),
+            find_highest_joltage(&vec![9, 8, 7, 6, 5, 4, 3, 2, 1, 1, 1, 1, 1, 1, 1], 2),
             98
         );
         assert_eq!(
-            find_highest_joltage(&vec![8, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 9]),
+            find_highest_joltage(&vec![8, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 9], 2),
             89
         );
         assert_eq!(
-            find_highest_joltage(&vec![2, 3, 4, 2, 3, 4, 2, 3, 4, 2, 3, 4, 2, 7, 8]),
+            find_highest_joltage(&vec![2, 3, 4, 2, 3, 4, 2, 3, 4, 2, 3, 4, 2, 7, 8], 2),
             78
         );
         assert_eq!(
-            find_highest_joltage(&vec![8, 1, 8, 1, 8, 1, 9, 1, 1, 1, 1, 2, 1, 1, 1]),
+            find_highest_joltage(&vec![8, 1, 8, 1, 8, 1, 9, 1, 1, 1, 1, 2, 1, 1, 1], 2),
             92
+        );
+
+        assert_eq!(
+            find_highest_joltage(&vec![9, 8, 7, 6, 5, 4, 3, 2, 1, 1, 1, 1, 1, 1, 1], 12),
+            987654321111
+        );
+        assert_eq!(
+            find_highest_joltage(&vec![8, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 9], 12),
+            811111111119
+        );
+        assert_eq!(
+            find_highest_joltage(&vec![2, 3, 4, 2, 3, 4, 2, 3, 4, 2, 3, 4, 2, 7, 8], 12),
+            434234234278
+        );
+        assert_eq!(
+            find_highest_joltage(&vec![8, 1, 8, 1, 8, 1, 9, 1, 1, 1, 1, 2, 1, 1, 1], 12),
+            888911112111
         );
     }
 
     #[test]
     fn can_sum_highest_joltages() {
-        assert_eq!(sum_highest_joltage(&example_banks()), 357)
+        assert_eq!(sum_highest_joltage(&example_banks(), 2), 357);
+        assert_eq!(sum_highest_joltage(&example_banks(), 12), 3121910778619);
     }
 }
