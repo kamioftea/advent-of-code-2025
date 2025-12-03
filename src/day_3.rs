@@ -1,6 +1,8 @@
 //! This is my solution for [Advent of Code - Day 3: _Lobby_](https://adventofcode.com/2025/day/3)
 //!
-//!
+//! - [`parse_input`] converts the input string into a list of [`BatteryBank`]s, which are `Vec`s of numbers
+//! - [`find_highest_joltage`] finds the highest joltage for a given bank, taking the length of number to find
+//! - [`sum_highest_joltage`] solves both parts, taking the length of number to differentiate the two parts
 
 use std::fs;
 
@@ -24,8 +26,10 @@ pub fn run() {
     );
 }
 
+/// Represents a bank of batteries that combine to provide a joltage
 type BatteryBank = Vec<u32>;
 
+/// Parse input so that each line is a [`BatteryBank`], taking the digits as the individual batteries
 fn parse_input(input: &String) -> Vec<BatteryBank> {
     input
         .lines()
@@ -37,6 +41,8 @@ fn parse_input(input: &String) -> Vec<BatteryBank> {
         .collect()
 }
 
+/// The highest joltage is the highest number of length `digits` that can be formed from the batteries in the battery
+/// bank, taken in order.
 fn find_highest_joltage(bank: &BatteryBank, digits: usize) -> u64 {
     let mut max_digits = vec![0; digits];
 
@@ -55,6 +61,7 @@ fn find_highest_joltage(bank: &BatteryBank, digits: usize) -> u64 {
         .fold(0, |acc, &digit| acc * 10 + digit as u64)
 }
 
+/// Solves both parts, part 1 `digits` = 2, part 2 `digits` = 12.
 fn sum_highest_joltage(banks: &Vec<BatteryBank>, digits: usize) -> u64 {
     banks
         .iter()
