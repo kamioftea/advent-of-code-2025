@@ -5,12 +5,13 @@
 use std::collections::HashSet;
 use std::fs;
 
-#[derive(Eq, PartialEq, Debug, Hash)]
+#[derive(Eq, PartialEq, Debug, Hash, Copy, Clone)]
 struct Coordinate {
     x: usize,
     y: usize,
 }
 
+#[derive(Debug, Eq, PartialEq, Clone)]
 struct Grid {
     rolls: HashSet<Coordinate>,
 }
@@ -33,6 +34,7 @@ impl From<&String> for Grid {
 }
 
 impl Grid {
+    #[cfg(test)]
     fn has_roll_at(&self, x: usize, y: usize) -> bool {
         self.rolls.contains(&Coordinate { x, y })
     }
@@ -51,10 +53,37 @@ impl Grid {
     fn count_accessible_rolls(&self) -> usize {
         self.rolls
             .iter()
-            .filter(|&roll| self.neighbour_count(roll.x, roll.y) < 4)
+            .filter(|roll| self.neighbour_count(roll.x, roll.y) < 4)
             .count()
     }
+
+    fn remove_accessible_rolls(&self) -> Grid {
+        let rolls = self
+            .rolls
+            .iter()
+            .filter(|roll| self.neighbour_count(roll.x, roll.y) >= 4)
+            .cloned()
+            .collect();
+
+        Grid { rolls }
+    }
+
+    fn count_removable_rolls(&self) -> usize {
+        let mut current_grid: Grid = self.clone();
+
+        loop {
+            let next_grid = current_grid.remove_accessible_rolls();
+            if next_grid.rolls.len() == current_grid.rolls.len() {
+                break;
+            }
+
+            current_grid = next_grid;
+        }
+
+        self.rolls.len() - current_grid.rolls.len()
+    }
 }
+
 /// The entry point for running the solutions with the 'real' puzzle input.
 ///
 /// - The puzzle input is expected to be at `<project_root>/res/day-4-input`
@@ -65,6 +94,8 @@ pub fn run() {
     let grid = Grid::from(&contents);
 
     println!("{} rolls are accessible", grid.count_accessible_rolls());
+
+    println!("{} rolls can be removed", grid.count_removable_rolls());
 }
 
 #[cfg(test)]
@@ -114,5 +145,20 @@ mod tests {
     #[test]
     fn can_count_accessible_rolls() {
         assert_eq!(sample_grid().count_accessible_rolls(), 13);
+    }
+
+    #[test]
+    fn can_remove_accessible_rolls() {
+        let grid = sample_grid();
+
+        let next_grid = grid.remove_accessible_rolls();
+
+        assert_eq!(next_grid.rolls.len(), 58);
+        assert_eq!(next_grid.count_accessible_rolls(), 12);
+    }
+
+    #[test]
+    fn can_count_possible_removals() {
+        assert_eq!(sample_grid().count_removable_rolls(), 43);
     }
 }
