@@ -64,24 +64,24 @@ fn parse_input(input: &String) -> (Vec<IdRange>, Vec<u64>) {
 /// current id is in the current range.
 fn count_fresh_ids(ranges: &Vec<IdRange>, ids: &Vec<u64>) -> u64 {
     let mut fresh_count = 0;
-    let mut ranges = ranges.clone();
-    let mut ids = ids.clone();
+    let mut range_index = 0;
+    let mut id_index = 0;
 
     loop {
-        if ranges.is_empty() || ids.is_empty() {
+        if range_index == ranges.len() || id_index == ids.len() {
             break;
         }
 
-        let (min, max) = ranges[0];
-        let id = ids[0];
+        let (min, max) = ranges[range_index];
+        let id = ids[id_index];
 
         if id <= max {
-            ids.remove(0);
+            id_index += 1;
             if id >= min {
                 fresh_count += 1;
             }
         } else {
-            ranges.remove(0);
+            range_index += 1;
         }
     }
 
@@ -91,14 +91,14 @@ fn count_fresh_ids(ranges: &Vec<IdRange>, ids: &Vec<u64>) -> u64 {
 /// Assumes the passed ranges are sorted. Return the count of ids included within one of the ranges
 fn count_possible_fresh_ids(ranges: &Vec<IdRange>) -> u64 {
     let mut total_ids = 0;
-    let mut current_position = 0;
+    let mut id_threshold = 0;
 
     for &(min, max) in ranges {
-        let current_min = min.max(current_position);
-        if current_min <= max {
-            total_ids += max - current_min + 1;
+        let lower_bound = min.max(id_threshold);
+        if lower_bound <= max {
+            total_ids += max - lower_bound + 1;
         }
-        current_position = current_position.max(max + 1)
+        id_threshold = id_threshold.max(max + 1)
     }
 
     total_ids
