@@ -15,6 +15,10 @@ pub fn run() {
     let (ranges, ids) = parse_input(&contents);
 
     println!("There are {} fresh IDs", count_fresh_ids(&ranges, &ids));
+    println!(
+        "There are {} possible fresh IDs",
+        count_possible_fresh_ids(&ranges)
+    );
 }
 
 type IdRange = (u64, u64);
@@ -75,6 +79,21 @@ fn count_fresh_ids(ranges: &Vec<IdRange>, ids: &Vec<u64>) -> u64 {
     fresh_count
 }
 
+fn count_possible_fresh_ids(ranges: &Vec<IdRange>) -> u64 {
+    let mut total_ids = 0;
+    let mut current_position = 0;
+
+    for &(min, max) in ranges {
+        let current_min = min.max(current_position);
+        if current_min <= max {
+            total_ids += max - current_min + 1;
+        }
+        current_position = current_position.max(max + 1)
+    }
+
+    total_ids
+}
+
 #[cfg(test)]
 mod tests {
     use crate::day_5::*;
@@ -110,5 +129,11 @@ mod tests {
     fn can_count_fresh_ids() {
         let (ranges, ids) = sample_data();
         assert_eq!(count_fresh_ids(&ranges, &ids), 3);
+    }
+
+    #[test]
+    fn can_count_possible_fresh_ids() {
+        let (ranges, _) = sample_data();
+        assert_eq!(count_possible_fresh_ids(&ranges), 14);
     }
 }
