@@ -1,6 +1,8 @@
 //! This is my solution for [Advent of Code - Day 5: _Cafeteria_](https://adventofcode.com/2025/day/5)
 //!
-//!
+//! - [`parse_input`] delegates to [`parse_ranges`] and [`parse_ids`]. Notably both return sorted ids/ranges.
+//! - [`count_fresh_ids`] solves part one
+//! - [`count_possible_fresh_ids`] solves part two
 
 use itertools::Itertools;
 use std::fs;
@@ -21,8 +23,11 @@ pub fn run() {
     );
 }
 
+/// An inclusive range of ids that are fresh
 type IdRange = (u64, u64);
 
+/// Parse each line in the format `{min}-{max}` as an [`IdRange`], and return them in sorted order (default sorting
+/// for pairs is by first entry, then by second)
 fn parse_ranges(input: &str) -> Vec<IdRange> {
     input
         .lines()
@@ -37,6 +42,7 @@ fn parse_ranges(input: &str) -> Vec<IdRange> {
         .collect()
 }
 
+/// Parse each line as a numeric id, and return the ids in ascending order
 fn parse_ids(input: &str) -> Vec<u64> {
     input
         .lines()
@@ -45,6 +51,7 @@ fn parse_ids(input: &str) -> Vec<u64> {
         .collect()
 }
 
+/// The input is in two sections, split by a blank line. Delegate each section to a dedicated parser.
 fn parse_input(input: &String) -> (Vec<IdRange>, Vec<u64>) {
     let (range_input, id_input) = input
         .split_once("\n\n")
@@ -53,6 +60,8 @@ fn parse_input(input: &String) -> (Vec<IdRange>, Vec<u64>) {
     (parse_ranges(range_input), parse_ids(id_input))
 }
 
+/// Assumes the input ranges and ids are sorted. Use a loop to iterate the ranges and ids in step. Counting where the
+/// current id is in the current range.
 fn count_fresh_ids(ranges: &Vec<IdRange>, ids: &Vec<u64>) -> u64 {
     let mut fresh_count = 0;
     let mut ranges = ranges.clone();
@@ -79,6 +88,7 @@ fn count_fresh_ids(ranges: &Vec<IdRange>, ids: &Vec<u64>) -> u64 {
     fresh_count
 }
 
+/// Assumes the passed ranges are sorted. Return the count of ids included within one of the ranges
 fn count_possible_fresh_ids(ranges: &Vec<IdRange>) -> u64 {
     let mut total_ids = 0;
     let mut current_position = 0;
