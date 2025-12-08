@@ -1,6 +1,9 @@
 //! This is my solution for [Advent of Code - Day 7: _Laboratories_](https://adventofcode.com/2025/day/7)
 //!
-//!
+//! [`TachyonManifold`] encapsulates today's puzzle
+//! - [`TachyonManifold::from<&String>`] parses the puzzle input
+//! - [`TachyonManifold::count_splits] solves part one
+//! - [`TachyonManifold::count_paths] solves part two
 
 use std::collections::HashSet;
 use std::fs;
@@ -25,17 +28,23 @@ pub fn run() {
     );
 }
 
+/// Represents a location within a [`TachyonManifold`]
 type Coordinate = (usize, usize);
 
+/// Represents a manifold by the location of the beam source,
+/// the locations of the beam splitters, and its dimensions.
 #[derive(Debug, Eq, PartialEq)]
 struct TachyonManifold {
-    start: Coordinate,
+    source: Coordinate,
     splitters: HashSet<Coordinate>,
     width: usize,
     height: usize,
 }
 
 impl From<&String> for TachyonManifold {
+    /// Interpret the input as a 2D grid, with `S` representing the
+    /// beam source, and `^` representing the location of a beam
+    /// splitter
     fn from(input: &String) -> TachyonManifold {
         let mut start = None;
         let mut splitters = HashSet::new();
@@ -57,7 +66,7 @@ impl From<&String> for TachyonManifold {
         }
 
         TachyonManifold {
-            start: start.expect("Thin input should include a start position"),
+            source: start.expect("Thin input should include a start position"),
             splitters,
             width,
             height,
@@ -66,9 +75,11 @@ impl From<&String> for TachyonManifold {
 }
 
 impl TachyonManifold {
+    /// Count the number of times a beam is split by a splitter as it passes through
+    /// the manifold.
     fn count_splits(&self) -> usize {
         let mut splits = 0;
-        let (initial_beam, start_row) = self.start;
+        let (initial_beam, start_row) = self.source;
         let mut beams: HashSet<usize> = vec![initial_beam].into_iter().collect();
 
         for y in start_row..self.height {
@@ -85,8 +96,9 @@ impl TachyonManifold {
         splits
     }
 
+    /// Count the number of possible routes a beam can take through the manifold
     fn count_paths(&self) -> usize {
-        let (initial_beam, start_row) = self.start;
+        let (initial_beam, start_row) = self.source;
         let mut beams: Vec<usize> = vec![0; self.width + 1].into_iter().collect();
         beams[initial_beam] = 1;
 
@@ -133,7 +145,7 @@ mod tests {
     fn can_parse_input() {
         let manifold = TachyonManifold::from(&sample_input());
 
-        assert_eq!(manifold.start, (7, 0));
+        assert_eq!(manifold.source, (7, 0));
 
         assert_eq!(manifold.splitters.len(), 22);
         assert!(manifold.splitters.contains(&(7, 2)));
