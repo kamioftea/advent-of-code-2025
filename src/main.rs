@@ -14,6 +14,7 @@ mod day_5;
 mod day_6;
 mod day_7;
 mod day_8;
+mod day_9;
 
 use bootstrap_day::bootstrap_day;
 use std::io::{self, Write};
@@ -33,6 +34,7 @@ fn main() {
         Box::new(|| day_6::run()),
         Box::new(|| day_7::run()),
         Box::new(|| day_8::run()),
+        Box::new(|| day_9::run()),
     ];
 
     let start = Instant::now();
