@@ -265,3 +265,6 @@ struct DecorationProject {
 ```
 
 The functions are then refactored to pass that around in place of the list of junction boxes.
+
+Reading other's solutions, I noted that the square root when calculating the connection distance is unnecessary as it
+doesn't change the sort order, and is quite expensive. Taking that out is a ~3x improvement in speed.

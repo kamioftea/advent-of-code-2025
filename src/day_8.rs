@@ -72,7 +72,7 @@ fn parse_input(input: &String) -> DecorationProject {
 
 /// The Euclidean distance between the two boxes in 3D space
 fn connection_distance((x_a, y_a, z_a): &JunctionBox, (x_b, y_b, z_b): &JunctionBox) -> i64 {
-    ((x_a - x_b).pow(2) + (y_a - y_b).pow(2) + (z_a - z_b).pow(2)).isqrt()
+    (x_a - x_b).pow(2) + (y_a - y_b).pow(2) + (z_a - z_b).pow(2)
 }
 
 /// Calculate all the possible connections between boxes, and return these sorted shortest first, represented by a pair
