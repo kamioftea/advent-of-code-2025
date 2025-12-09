@@ -1,6 +1,17 @@
 //! This is my solution for [Advent of Code - Day 8: _Playground_](https://adventofcode.com/2025/day/8)
 //!
+//! [`parse_input`] turns the puzzle input into a list of [`JunctionBox`]es. Given both parts need the possible
+//! connections, shortest first, I calculate the permutations and sort them once, grouping them with the associated
+//! boxes in a [`DecorationProject`].
 //!
+//! - [`circuits_after_n_connections`] does the bulk of the work for part one, clustering the boxes into circuits using
+//!   thr first `n` connections
+//! - [`product_of_3_largest_circuits_after_n_connections`] wraps [`circuits_after_n_connections`] to produce the puzzle
+//!   solution
+//! - [`find_final_connection`] does most of the work for part two, merging the circuits until there is only one, then
+//!   returning that final connection
+//! - [`find_x_product_of_final_connection`] calculates the puzzle solution from the connection provided by
+//!   [`find_final_connection`]
 
 use itertools::Itertools;
 use std::fs;
@@ -12,23 +23,35 @@ use std::fs;
 pub fn run() {
     let contents = fs::read_to_string("res/day-8-input.txt").expect("Failed to read file");
 
-    let junction_boxes = parse_input(&contents);
+    let project = parse_input(&contents);
 
     println!(
         "After 1000 connections the product of the three largest is {}",
-        product_of_3_largest_circuits_after_n_connections(&junction_boxes, 1000)
+        product_of_3_largest_circuits_after_n_connections(&project, 1000)
     );
 
     println!(
         "The product of x-coordinates of the final connection is {}",
-        find_x_product_of_final_connection(&junction_boxes)
+        find_x_product_of_final_connection(&project)
     );
 }
 
+/// The location of a junction box in 3D space
 type JunctionBox = (i64, i64, i64);
 
-fn parse_input(input: &String) -> Vec<JunctionBox> {
-    input
+/// A connection between two [`JunctionBox`]es represented by the index of each in the list of junction boxes
+type Connection = (usize, usize);
+
+/// Combines the junction boxes with all their possible connections, sorted shortest first
+struct DecorationProject {
+    boxes: Vec<JunctionBox>,
+    connections: Vec<Connection>,
+}
+
+/// Parses each line as a [`JunctionBox`] in the format `{x},{y},{z}`. Delegates to [`order_possible_connections`]
+/// to build the connections once here so I don't have to repeat that expensive operation for both parts.
+fn parse_input(input: &String) -> DecorationProject {
+    let boxes = input
         .lines()
         .map(|line| {
             let (x, y, z) = line
@@ -40,14 +63,21 @@ fn parse_input(input: &String) -> Vec<JunctionBox> {
 
             (x, y, z)
         })
-        .collect()
+        .collect();
+
+    let connections = order_possible_connections(&boxes);
+
+    DecorationProject { boxes, connections }
 }
 
+/// The Euclidean distance between the two boxes in 3D space
 fn connection_distance((x_a, y_a, z_a): &JunctionBox, (x_b, y_b, z_b): &JunctionBox) -> i64 {
     ((x_a - x_b).pow(2) + (y_a - y_b).pow(2) + (z_a - z_b).pow(2)).isqrt()
 }
 
-fn order_possible_connections(junction_boxes: &Vec<JunctionBox>) -> Vec<(usize, usize)> {
+/// Calculate all the possible connections between boxes, and return these sorted shortest first, represented by a pair
+/// of indices into the list of boxes
+fn order_possible_connections(junction_boxes: &Vec<JunctionBox>) -> Vec<Connection> {
     junction_boxes
         .iter()
         .enumerate()
@@ -57,11 +87,14 @@ fn order_possible_connections(junction_boxes: &Vec<JunctionBox>) -> Vec<(usize, 
         .collect()
 }
 
+/// The bulk of the work for part one, combine junction boxes into circuits by joining `target_connections` connections,
+/// smallest first. Returns the list of circuit sizes.
 fn circuits_after_n_connections(
-    junction_boxes: &Vec<JunctionBox>,
+    project: &DecorationProject,
     target_connections: u32,
 ) -> Vec<usize> {
-    let mut circuits: Vec<usize> = junction_boxes
+    let mut circuits: Vec<usize> = project
+        .boxes
         .iter()
         .enumerate()
         .map(|(idx, _)| idx)
@@ -69,7 +102,7 @@ fn circuits_after_n_connections(
 
     let mut connection_count = 0;
 
-    for (a, b) in order_possible_connections(junction_boxes) {
+    for &(a, b) in project.connections.iter() {
         let circuit_a = circuits[a];
         let circuit_b = circuits[b];
 
@@ -90,11 +123,13 @@ fn circuits_after_n_connections(
     circuits.into_iter().counts().values().cloned().collect()
 }
 
+/// Use [`circuits_after_n_connections`] to find the circuit sizes. The puzzle solution is then the product of the
+/// largest three.
 fn product_of_3_largest_circuits_after_n_connections(
-    junction_boxes: &Vec<JunctionBox>,
+    project: &DecorationProject,
     connection_count: u32,
 ) -> usize {
-    circuits_after_n_connections(junction_boxes, connection_count)
+    circuits_after_n_connections(project, connection_count)
         .iter()
         .sorted()
         .rev()
@@ -102,14 +137,17 @@ fn product_of_3_largest_circuits_after_n_connections(
         .product()
 }
 
-fn find_final_connection(junction_boxes: &Vec<JunctionBox>) -> (usize, usize) {
-    let mut circuits: Vec<usize> = junction_boxes
+/// The bulk of the work for part two, combine junction boxes into a single circuit, combining by the smallest
+/// connections until all junction boxes are included. Returns that final connection.
+fn find_final_connection(project: &DecorationProject) -> Connection {
+    let mut circuits: Vec<usize> = project
+        .boxes
         .iter()
         .enumerate()
         .map(|(idx, _)| idx)
         .collect();
 
-    for (a, b) in order_possible_connections(junction_boxes) {
+    for &(a, b) in project.connections.iter() {
         let circuit_a = circuits[a];
         let circuit_b = circuits[b];
 
@@ -129,10 +167,11 @@ fn find_final_connection(junction_boxes: &Vec<JunctionBox>) -> (usize, usize) {
     unreachable!()
 }
 
-fn find_x_product_of_final_connection(junction_boxes: &Vec<JunctionBox>) -> i64 {
-    let (a, b) = find_final_connection(junction_boxes);
+/// Delegates to [`find_final_connection`], then calculates the puzzle solution by multiplying the x coordinates.
+fn find_x_product_of_final_connection(project: &DecorationProject) -> i64 {
+    let (a, b) = find_final_connection(project);
 
-    junction_boxes[a].0 * junction_boxes[b].0
+    project.boxes[a].0 * project.boxes[b].0
 }
 
 #[cfg(test)]
@@ -189,18 +228,20 @@ mod tests {
         ]
     }
 
-    #[test]
-    fn can_parse_coordinates() {
-        assert_eq!(parse_input(&sample_input()), sample_junction_boxes())
+    fn sample_project() -> DecorationProject {
+        let boxes = sample_junction_boxes();
+        let connections = order_possible_connections(&boxes);
+
+        DecorationProject { boxes, connections }
     }
 
     #[test]
-    fn can_find_shortest_connections() {
-        let shortest_connections: Vec<(usize, usize)> =
-            order_possible_connections(&sample_junction_boxes())
-                .into_iter()
-                .take(4)
-                .collect();
+    fn can_parse_coordinates() {
+        let project = parse_input(&sample_input());
+        assert_eq!(project.boxes, sample_junction_boxes());
+
+        let shortest_connections: Vec<Connection> =
+            project.connections.into_iter().take(4).collect();
 
         assert_eq!(
             shortest_connections,
@@ -209,24 +250,24 @@ mod tests {
     }
 
     #[test]
+    fn can_find_shortest_connections() {}
+
+    #[test]
     fn can_merge_circuits() {
         assert_eq!(
-            circuits_after_n_connections(&sample_junction_boxes(), 10).len(),
+            circuits_after_n_connections(&sample_project(), 10).len(),
             11
         );
 
         assert_eq!(
-            product_of_3_largest_circuits_after_n_connections(&sample_junction_boxes(), 10),
+            product_of_3_largest_circuits_after_n_connections(&sample_project(), 10),
             40
         );
     }
 
     #[test]
     fn can_find_connection_that_merges_circuit() {
-        assert_eq!(find_final_connection(&sample_junction_boxes()), (10, 12));
-        assert_eq!(
-            find_x_product_of_final_connection(&sample_junction_boxes()),
-            25272
-        );
+        assert_eq!(find_final_connection(&sample_project()), (10, 12));
+        assert_eq!(find_x_product_of_final_connection(&sample_project()), 25272);
     }
 }
