@@ -91,7 +91,7 @@ fn order_possible_connections(junction_boxes: &Vec<JunctionBox>) -> Vec<Connecti
 /// smallest first. Returns the list of circuit sizes.
 fn circuits_after_n_connections(
     project: &DecorationProject,
-    target_connections: u32,
+    target_connections: usize,
 ) -> Vec<usize> {
     let mut circuits: Vec<usize> = project
         .boxes
@@ -100,9 +100,7 @@ fn circuits_after_n_connections(
         .map(|(idx, _)| idx)
         .collect();
 
-    let mut connection_count = 0;
-
-    for &(a, b) in project.connections.iter() {
+    for &(a, b) in project.connections.iter().take(target_connections) {
         let circuit_a = circuits[a];
         let circuit_b = circuits[b];
 
@@ -113,11 +111,6 @@ fn circuits_after_n_connections(
                 }
             });
         }
-
-        connection_count += 1;
-        if connection_count == target_connections {
-            break;
-        }
     }
 
     circuits.into_iter().counts().values().cloned().collect()
@@ -127,7 +120,7 @@ fn circuits_after_n_connections(
 /// largest three.
 fn product_of_3_largest_circuits_after_n_connections(
     project: &DecorationProject,
-    connection_count: u32,
+    connection_count: usize,
 ) -> usize {
     circuits_after_n_connections(project, connection_count)
         .iter()
