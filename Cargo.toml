@@ -10,5 +10,7 @@ itertools = { version = "0.14.0", features = [] }
 text_io = "0.1.13"
 reqwest = { version = "0.12.24", features = ["blocking", "cookies"] }
 regex = "1.12.2"
-scraper = "0.24.0"
+scraper = "0.25.0"
 cached = "0.56.0"
+rayon = "1.11.0"
+z3 = { version = "0.19.5", features = ["gh-release"] }
